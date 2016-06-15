@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!-- Submitted by Katy Southard, 6/15/2016  -->
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fruit Bar Chart</title>  
+
+    <!-- JQuery & D3 -->  
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+    
+    <!-- Bootstrap -->  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- Google Web Fonts -->  
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
+<style>
+    body {
+    font-family: 'Open Sans', sans-serif;
+    }
+
+    h1 {
+        text-align: left;
+        font-size: 28px;
+        padding-left: 20px;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    .chart {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .axis path, .axis line {
+        fill: none;
+        stroke: #0000ff;
+        shape-rendering: crispEdges;
+        font-weight: bold;
+    }
+
+    .bar {
+        z-index: 1000;
+    }
+
+    .numbers {
+        text-anchor: right;
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+        
+    .title {
+        text-anchor: left;
+        font-size: 1.8em;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+
+    //JS-set Style Elements
+    var margin = {top: 50, right: 50, bottom: 20, left: 100},
+            width = 675,
+            height = 450,
+            tickPadding = 5,
+            barHeight = 40;
+
+    var color = d3.scale.ordinal()
+            .range(["#bf0d0d", "#8ae32b", "#F0912F", "#854442", "#E74F0D"]);
+    // Data
+           
+    var data = [{"Quantity": 100, "fruits": "Apples"}, {"Quantity": 60, "fruits": "Pears"}, {"Quantity": 70, "fruits": "Tangerines"}, 
+    {"Quantity": 90, "fruits": "Pomegranates"}, {"Quantity": 50, "fruits": "Oranges"}];
+
+    // Values
+    var x = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) { return d.Quantity; })])
+            .range([0, width]);
+
+    // Categories
+
+    var y = d3.scale.ordinal() 
+          .domain(Object.keys(data).map(function(k) {return data[k]["fruits"];}))
+          .rangeBands([height - margin.top - margin.bottom, 0]);
+
+    //Axis Definition
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .ticks(10)
+            .tickSize(5)
+            .tickPadding(tickPadding);
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(5)
+            .tickSize(0)
+            .tickPadding(tickPadding);
+
+    //Generate SVG
+
+    var svg = d3.select("#bar-chart").append("svg")
+            .attr("class", "chart")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+    svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0, " + (height - margin.top - margin.bottom) + ")")
+            .call(xAxis);
+    svg.append("g")
+            .attr("class", "axis")
+            .call(yAxis);       
+    svg.selectAll(".chart")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", 0)
+            .attr("y", function(d) { return y(d.fruits) + (barHeight * 0.5 ); })
+            .attr("width", function(d) { return x(d.Quantity) ; })
+            .attr("height", barHeight)
+            .style("fill", function(d,i) { return color(i); });
+    svg.selectAll(".rect")
+            .data(data)
+            .enter().append("svg:text")
+            .attr("class", "numbers")
+            .attr("x", function(d) { return x(d.Quantity) - 30; } )
+            .attr("y", function(d) { return y(d.fruits) + barHeight * .25; })
+            .attr("dx", "2em")
+            .attr("dy", "1.6em")
+            .text(function(d) { return d.Quantity ; });
+    svg.append("text")
+            .attr("class", "title")
+             .attr("x", 0)
+             .attr("y", 0 - (margin.top * .4))
+             .text("Number of Fruits by Type");
+});
+</script>
+
+</head>
+
+<body>
+    <div class="row">
+        <h1 class="text-center">LJA D3.js Course -- Assignment 1</h1>
+    </div>
+    <div class="row" style="margin-top: 15px;">
+        <div class="col-md-6 col-lg-offset-3">
+            <div id="bar-chart"></div> 
+        </div>
+    </div>
+</body>
+
+</html>
