@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<!-- Submitted by Katy Southard, 6/15/2016  -->
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Doctor Who Statistics</title>  
+
+    <!-- JQuery & D3 -->  
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+    
+    <!-- Bootstrap -->  
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- Google Web Fonts -->  
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            font-family: "Open Sans", sans-serif;
+            position: relative;
+        }
+        .chartTitle {
+          font: 22px sans-serif;
+          fill: #666;
+        }
+        .chartLabel {
+          font: 16px sans-serif;
+          fill: #666;
+        }
+        .arcLabel {
+          font: 12px sans-serif;
+          fill: #000;
+          font-weight: bold;
+        }
+        .arcLabelInner {
+          font: 12px sans-serif;
+          fill: #fff;
+          font-weight: bold;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+
+            var num_episodes = { center_label: 'Number of Episodes', vals: [169, 127, 128, 146, 72, 51, 42, 1, 13, 44, 41, 36] },
+            num_companions = { center_label: 'Number of Companions', vals: [10, 6, 3, 9, 6, 2, 2, 1, 3, 11, 5, 3] },
+
+            data = num_episodes;
+
+            var labels = ['First Doctor', 'Second Doctor', 'Third Doctor', 'Fourth Doctor', 'Fifth Doctor', 'Sixth Doctor', 'Seventh Doctor', 'Eighth Doctor', 'Ninth Doctor', 'Tenth Doctor', 'Eleventh Doctor', 'Twelfth Doctor'];
+
+            var w = 800,                      
+                h = 700,
+                r = Math.min(w, h) / 2.5,        
+                labelr = r + 5,
+                dur = 750,                     
+                color = d3.scale.category20(),
+                donut = d3.layout.pie().sort(null),
+                arc = d3.svg.arc().innerRadius(r - 70).outerRadius(r - 20);
+
+            // ---------------------------------------------------------------------
+            var svg = d3.select("#d3portfolio").append("svg:svg")
+                .attr("width", w).attr("height", h);
+
+            var arc_grp = svg.append("svg:g")
+                .attr("class", "arcGrp")
+                .attr("transform", "translate(" + (w / 2) + "," + (h / 2) + ")");
+
+            var label_group = svg.append("svg:g")
+                .attr("class", "lblGroup")
+                .attr("transform", "translate(" + (w / 2) + "," + (h / 2) + ")");
+
+            var label_group_2 = svg.append("svg:g")
+                .attr("class", "lblGroup2")
+                .attr("transform", "translate(" + (w / 2) + "," + (h / 2) + ")");
+
+            // Group for Center Text
+            var center_group = svg.append("svg:g")
+                .attr("class", "ctrGroup")
+                .attr("transform", "translate(" + (w / 2) + "," + (h / 2) + ")");
+
+             var center_group_2 = svg.append("svg:g")
+                .attr("class", "ctrGroup")
+                .attr("transform", "translate(" + (w / 2) + "," + ((h / 2)-30) + ")");
+
+            // Center Title
+            var pieTitle = center_group_2.append("svg:text")
+                .attr("dy", ".35em").attr("class", "chartTitle")
+                .attr("text-anchor", "middle")
+                .text("Doctor Who Breakdown");
+
+            // Center SubTitle
+            var pieLabel = center_group.append("svg:text")
+                .attr("dy", ".35em").attr("class", "chartLabel")
+                .attr("text-anchor", "middle")
+                .text(data.center_label);
+
+            // Draw Arc Paths
+            var arcs = arc_grp.selectAll("path")
+                .data(donut(data.vals));
+            arcs.enter().append("svg:path")
+                .attr("stroke", "white")
+                .attr("stroke-width", 0.5)
+                .attr("fill", function(d, i) {return color(i);})
+                .attr("d", arc)
+                .each(function(d) {this._current = d});
+
+            // Draw Slice Labels
+            var sliceLabel = label_group.selectAll("text")
+                .data(donut(data.vals));
+            sliceLabel.enter().append("svg:text")
+                .attr("class", "arcLabel")
+                .attr("transform", function(d) {
+                     var c = arc.centroid(d),
+                        x = c[0],
+                        y = c[1],
+                        // pythagorean theorem for hypotenuse
+                        h = Math.sqrt(x*x + y*y);
+                    return "translate(" + (x/h * labelr) +  ',' +
+                       (y/h * labelr) +  ")"})
+                .attr("text-anchor", function(d) {
+                    // are we past the center?
+                    return (d.endAngle + d.startAngle)/2 > Math.PI ?
+                        "end" : "start";
+                })
+                .text(function(d, i) {return labels[i]; });
+
+             // Draw Inner Slice Labels
+            var sliceLabel2 = label_group_2.selectAll("text")
+                .data(donut(data.vals));
+            sliceLabel2.enter().append("svg:text")
+                .attr("class", "arcLabelInner")
+                .attr("transform", function(d) {
+                    return "translate(" + arc.centroid(d) + ")";
+                })
+                .attr("text-anchor", "middle")
+                .text(function(d, i) {return data.vals[i]; });
+
+
+            // Store the currently-displayed angles in this._current.
+            // Then, interpolate from this._current to the new angles.
+            function arcTween(a) {
+                var i = d3.interpolate(this._current, a);
+                this._current = i(0);
+                return function(t) {
+                    return arc(i(t));
+                };
+            }
+
+            // Uupdate Chart
+            function updateChart(model) {
+                data = eval(model);
+
+                arcs.data(donut(data.vals));
+                arcs.transition().ease("elastic").duration(dur).attrTween("d", arcTween);
+
+                sliceLabel.data(donut(data.vals));
+                sliceLabel.transition().ease("elastic").duration(dur)
+                    .attr("transform", function(d) {
+                     var c = arc.centroid(d),
+                        x = c[0],
+                        y = c[1],
+                        h = Math.sqrt(x*x + y*y);
+                    return "translate(" + (x/h * labelr) +  ',' +
+                       (y/h * labelr) +  ")"})
+                    .attr("text-anchor", function(d) {
+                    return (d.endAngle + d.startAngle)/2 > Math.PI ?
+                        "end" : "start";
+                    })
+                    .text(function(d, i) {return labels[i]; })
+                    .style("fill-opacity", function(d) {return d.value==0 ? 1e-6 : 1;});
+
+                sliceLabel2.data(donut(data.vals));
+                sliceLabel2.transition().ease("elastic").duration(dur)
+                    .attr("transform", function(d) {
+                    return "translate(" + arc.centroid(d) + ")";
+                })
+                .attr("text-anchor", "middle")
+                .text(function(d, i) {return data.vals[i]; })
+                    .style("fill-opacity", function(d) {return d.value==0 ? 1e-6 : 1;});
+                    
+                pieLabel.text(data.center_label);
+            }
+
+            // Click Handler
+            $("#objectives a").click(function() {
+                updateChart(this.href.slice(this.href.indexOf('#') + 1));
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1>Doctor Who Statistics</h1>
+            </div>
+
+            <div class="col-md-12 text-center">
+                <div id="objectives">
+                    <div class="row">
+                        <div class="col-md-3 col-md-offset-3">
+                            <h4><a href="#num_episodes">View # of Episodes</a></h4>
+                        </div>
+                        <div class="col-md-3">
+                            <h4><a href="#num_companions">View # of Companions</a></h4> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div id="d3portfolio"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <h5 class="text-center">Data Source: <a target="_blank" href="https://en.wikipedia.org/wiki/List_of_Doctor_Who_serials">https://en.wikipedia.org/wiki/List_of_Doctor_Who_serials</a></h5>
+    </div>
+
+
+</body>
+</html>
